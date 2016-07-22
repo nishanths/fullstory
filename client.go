@@ -62,11 +62,11 @@ func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		defer resp.Body.Close()
 		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
-		resp.Body.Close()
 		return nil, StatusError{
 			Body:       b,
 			Status:     resp.Status,
