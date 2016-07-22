@@ -10,6 +10,12 @@ Package `fullstory` implements a client for the
 
 See [godoc](https://godoc.org/github.com/nishanths/fullstory).
 
+# Test
+
+```
+go test -race 
+```
+
 # Example
 
 ```
@@ -23,8 +29,7 @@ import (
 )
 
 func main() {
-	cfg := fullstory.Config{"your API token"}
-	client := fullstory.NewClient(cfg)
+	client := fullstory.NewClient("API token")
 
 	s, err := client.Sessions(15, "foo", "hikingfan@gmail.com")
 	if err != nil {
@@ -33,10 +38,6 @@ func main() {
 	fmt.Println(s)
 }
 ```
-
-# TODO
-
-- Test
 
 # License
 
