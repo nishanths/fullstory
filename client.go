@@ -21,7 +21,7 @@ type StatusError struct {
 }
 
 func (e StatusError) Error() string {
-	return fmt.Sprintf("fullstory: response error: %s", e.StatusCode, e.Status)
+	return fmt.Sprintf("fullstory: response error: %s", e.Status)
 }
 
 // Client represents a HTTP client for making requests to the FullStory API.

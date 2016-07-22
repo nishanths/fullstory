@@ -98,7 +98,7 @@ type ExportData io.ReadCloser
 // ExportList returns a list of metadata on completed data export bundles.
 func (c *Client) ExportList(start time.Time) ([]ExportMeta, error) {
 	v := make(url.Values)
-	v.Add("start", fmt.Sprintf("%s", start.Unix()))
+	v.Add("start", fmt.Sprintf("%d", start.Unix()))
 
 	req, err := http.NewRequest("GET", c.BaseURL+"/export/list"+"?"+v.Encode(), nil)
 	if err != nil {
