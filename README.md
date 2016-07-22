@@ -2,6 +2,7 @@
 
 [![wercker status](https://app.wercker.com/status/5c617e0ba84e532e22029444f79d835f/s/master "wercker status")](https://app.wercker.com/project/bykey/5c617e0ba84e532e22029444f79d835f)
 [![GoDoc](https://godoc.org/github.com/nishanths/fullstory?status.svg)](https://godoc.org/github.com/nishanths/fullstory)
+[![Coverage Status](https://coveralls.io/repos/github/nishanths/fullstory/badge.svg?branch=master)](https://coveralls.io/github/nishanths/fullstory?branch=master)
 
 Package `fullstory` implements a client for the
 [fullstory.com](https://fullstory.com) API.
