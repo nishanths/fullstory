@@ -12,7 +12,7 @@ const BaseURL = "https://fullstory.com/api/v1"
 
 var _ error = StatusError{}
 
-// StatusError is returned when the HTTP request succeeds, but the response status
+// StatusError is returned when the HTTP roundtrip succeeds, but the response status
 // does not equal http.StatusOK.
 type StatusError struct {
 	Status     string
@@ -21,35 +21,39 @@ type StatusError struct {
 }
 
 func (e StatusError) Error() string {
-	return fmt.Sprintf("fullstory: response error: %d %s", e.StatusCode, e.Status)
+	return fmt.Sprintf("fullstory: response error: %s", e.StatusCode, e.Status)
 }
 
 // Client represents a HTTP client for making requests to the FullStory API.
 type Client struct {
 	HTTPClient *http.Client
-	Config     Config
+	Config
 }
 
 // Config is configuration for Client.
 type Config struct {
 	APIToken string
+	BaseURL  string
 }
 
 // NewClient returns a Client initialized with http.DefaultClient and the
-// supplied Config.
-func NewClient(cfg Config) *Client {
+// supplied apiToken.
+func NewClient(apiToken string) *Client {
 	return &Client{
 		HTTPClient: http.DefaultClient,
-		Config:     cfg,
+		Config: Config{
+			APIToken: apiToken,
+			BaseURL:  BaseURL,
+		},
 	}
 }
 
 // doReq performs the supplied HTTP request and returns the data in the response.
-// Necessary authentication headers are added to the request if not already set.
+// Necessary authentication headers are added before performing the request.
 //
 // If the error is nil, the caller is responsible for closing the returned data.
 func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
-	req.Header.Set("Authorization", "Basic "+c.Config.APIToken)
+	req.Header.Set("Authorization", "Basic "+c.APIToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.HTTPClient.Do(req)

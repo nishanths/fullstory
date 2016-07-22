@@ -48,7 +48,7 @@ func (c *Client) Sessions(limit int, uid, email string) ([]Session, error) {
 	v.Add("uid", uid)
 	v.Add("email", email)
 
-	req, err := http.NewRequest("GET", BaseURL+"/sessions"+"?"+v.Encode(), nil)
+	req, err := http.NewRequest("GET", c.BaseURL+"/sessions"+"?"+v.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (c *Client) Sessions(limit int, uid, email string) ([]Session, error) {
 	defer body.Close()
 
 	var s []Session
-	if err := json.NewDecoder(body).Decode(s); err != nil {
+	if err := json.NewDecoder(body).Decode(&s); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -69,21 +69,21 @@ func (c *Client) Sessions(limit int, uid, email string) ([]Session, error) {
 // ExportMeta is metadata about ExportData.
 type ExportMeta struct {
 	Start time.Time
-	End   time.Time
+	Stop  time.Time
 	ID    int
 }
 
 func (em *ExportMeta) UnmarshalJSON(data []byte) error {
 	aux := struct {
 		Start int64
-		End   int64
+		Stop  int64
 		ID    int
 	}{}
 	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
 	em.Start = time.Unix(aux.Start, 0)
-	em.End = time.Unix(aux.End, 0)
+	em.Stop = time.Unix(aux.Stop, 0)
 	em.ID = aux.ID
 	return nil
 }
@@ -95,12 +95,12 @@ func (em *ExportMeta) UnmarshalJSON(data []byte) error {
 //   http://help.fullstory.com/develop-rest/data-export-api
 type ExportData io.ReadCloser
 
-// ExportList returns a list of completed data export bundles.
+// ExportList returns a list of metadata on completed data export bundles.
 func (c *Client) ExportList(start time.Time) ([]ExportMeta, error) {
 	v := make(url.Values)
 	v.Add("start", fmt.Sprintf("%s", start.Unix()))
 
-	req, err := http.NewRequest("GET", BaseURL+"/export/list"+"?"+v.Encode(), nil)
+	req, err := http.NewRequest("GET", c.BaseURL+"/export/list"+"?"+v.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -111,11 +111,11 @@ func (c *Client) ExportList(start time.Time) ([]ExportMeta, error) {
 	}
 	defer body.Close()
 
-	var em []ExportMeta
-	if err := json.NewDecoder(body).Decode(em); err != nil {
+	var m map[string][]ExportMeta
+	if err := json.NewDecoder(body).Decode(&m); err != nil {
 		return nil, err
 	}
-	return em, nil
+	return m["exports"], nil
 }
 
 // ExportData returns the data export bundle specified by id.
@@ -126,15 +126,10 @@ func (c *Client) ExportData(id int) (ExportData, error) {
 	v := make(url.Values)
 	v.Add("id", strconv.Itoa(id))
 
-	req, err := http.NewRequest("GET", BaseURL+"/export/get"+"?"+v.Encode(), nil)
+	req, err := http.NewRequest("GET", c.BaseURL+"/export/get"+"?"+v.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.doReq(req)
-	if err != nil {
-		body.Close()
-		return nil, err
-	}
-	return body, nil
+	return c.doReq(req)
 }

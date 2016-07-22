@@ -8,8 +8,7 @@ import (
 )
 
 func Example_usage() {
-	cfg := fullstory.Config{"your API token"}
-	client := fullstory.NewClient(cfg)
+	client := fullstory.NewClient("API token")
 
 	s, err := client.Sessions(15, "foo", "hikingfan@gmail.com")
 	if err != nil {
