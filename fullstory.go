@@ -120,9 +120,9 @@ func (c *Client) ExportList(start time.Time) ([]ExportMeta, error) {
 
 // ExportData returns the data export bundle specified by id.
 //
-// The caller is responsible for closing the returned value when the returned
+// The caller is responsible for closing the returned ExportData if the returned
 // error is nil.
-func (c *Client) ExportData(id int) (io.ReadCloser, error) {
+func (c *Client) ExportData(id int) (ExportData, error) {
 	v := make(url.Values)
 	v.Add("id", strconv.Itoa(id))
 

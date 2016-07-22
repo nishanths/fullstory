@@ -68,7 +68,6 @@ func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
 			Status:     resp.Status,
 			StatusCode: resp.StatusCode,
 		}
-
 	}
 
 	return resp.Body, nil
