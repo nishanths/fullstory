@@ -1,9 +1,9 @@
 package fullstory
 
 import (
+	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -17,7 +17,7 @@ var _ error = StatusError{}
 type StatusError struct {
 	Status     string
 	StatusCode int
-	Body       []byte // Data from response body.
+	Body       io.Reader
 }
 
 func (e StatusError) Error() string {
@@ -63,10 +63,8 @@ func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		defer resp.Body.Close()
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
+		b := &bytes.Buffer{}
+		io.Copy(b, resp.Body) // Ignore error.
 		return nil, StatusError{
 			Body:       b,
 			Status:     resp.Status,
