@@ -1,17 +1,21 @@
 package fullstory
 
 import (
+	"compress/gzip"
 	"flag"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 )
 
 var (
-	router *http.ServeMux
-	srv    *httptest.Server
-	client *Client
+	router  *http.ServeMux
+	srv     *httptest.Server
+	client  *Client
+	client2 *Client
 
 	testdata = map[string][]byte{
 		"sessions": []byte(`
@@ -51,9 +55,35 @@ func setupTest() {
 	router = http.NewServeMux()
 	srv = httptest.NewServer(router)
 
-	// FullStory test API client.
-	client = NewClient("xyz")
-	client.BaseURL = srv.URL
+	// FullStory test API clients.
+	client = &Client{
+		HTTPClient: &http.Client{},
+		Config: Config{
+			APIToken: "xyz",
+			BaseURL:  srv.URL,
+		},
+	}
+
+	client2 = &Client{
+		HTTPClient: &http.Client{
+			Transport: &http.Transport{
+				DisableCompression: true, // To test ExportData manual gzipped
+				Proxy:              http.ProxyFromEnvironment,
+				DialContext: (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext,
+				MaxIdleConns:          100,
+				IdleConnTimeout:       90 * time.Second,
+				TLSHandshakeTimeout:   10 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+			},
+		},
+		Config: Config{
+			APIToken: "xyz",
+			BaseURL:  srv.URL,
+		},
+	}
 
 	mw := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -86,7 +116,18 @@ func setupTest() {
 	}))
 
 	router.HandleFunc("/export/get", mw(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("{}"))
+		w.Header().Set("Content-Encoding", "gzip")
+
+		gz, err := gzip.NewWriterLevel(w, gzip.BestCompression)
+		if err != nil {
+			panic(err)
+		}
+		if _, err := gz.Write([]byte(`{"foo":bar, "hello:world", "answer":42, "question":null}`)); err != nil {
+			panic(err)
+		}
+		if err := gz.Close(); err != nil {
+			panic(err)
+		}
 	}))
 }
 

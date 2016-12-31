@@ -1,6 +1,7 @@
 package fullstory
 
 import (
+	"compress/gzip"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -55,12 +56,46 @@ func TestExportData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer data.Close()
+
+	// Automatically decompresses.
+
 	b, err := ioutil.ReadAll(data)
 	if err != nil {
 		t.Fatal(err)
 	}
 	s := string(b)
-	if s != "{}" {
-		t.Fatalf("got %q, want %q", s, "{}")
+
+	expect := `{"foo":bar, "hello:world", "answer":42, "question":null}`
+
+	if s != expect {
+		t.Fatalf("got %q, want %q", s, expect)
+	}
+}
+
+func TestExportDataGzip(t *testing.T) {
+	t.Parallel()
+	data, err := client2.ExportData(12345)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer data.Close()
+	r, err := gzip.NewReader(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+
+	// Requires manual decompression.
+
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(b)
+
+	expect := `{"foo":bar, "hello:world", "answer":42, "question":null}`
+	if s != expect {
+		t.Fatalf("got %q, want %q", s, expect)
 	}
 }

@@ -88,13 +88,6 @@ func (em *ExportMeta) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// ExportData represents data from the "/export/get" endpoint.
-// The contents should be treated as gzipped JSON.
-//
-// For more details, see:
-//   http://help.fullstory.com/develop-rest/data-export-api
-type ExportData io.ReadCloser
-
 // ExportList returns a list of metadata on completed data export bundles.
 func (c *Client) ExportList(start time.Time) ([]ExportMeta, error) {
 	v := make(url.Values)
@@ -118,7 +111,17 @@ func (c *Client) ExportList(start time.Time) ([]ExportMeta, error) {
 	return m["exports"], nil
 }
 
+// ExportData represents data from the "/export/get" endpoint.
+//
+// For more details, see:
+//   http://help.fullstory.com/develop-rest/data-export-api
+type ExportData io.ReadCloser
+
 // ExportData returns the data export bundle specified by id.
+//
+// If the client's HTTP Transport has DisableCompression set to true,
+// the caller should treat Export Dzta as gzipped JSON. Otherwise,
+// ExportData is JSON that has already been uncompressed.
 //
 // The caller is responsible for closing the returned ExportData if the returned
 // error is nil.

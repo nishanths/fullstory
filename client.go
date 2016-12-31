@@ -54,7 +54,6 @@ func NewClient(apiToken string) *Client {
 // If the error is nil, the caller is responsible for closing the returned data.
 func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
 	req.Header.Set("Authorization", "Basic "+c.APIToken)
-	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
