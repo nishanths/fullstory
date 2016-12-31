@@ -7,6 +7,9 @@
 Package `fullstory` implements a client for the
 [fullstory.com](https://fullstory.com) API.
 
+It's untested with the live API. Please [create an
+issue](https://github.com/nishanths/fullstory/issues) if it does not work.
+
 # Docs
 
 See [godoc](https://godoc.org/github.com/nishanths/fullstory).
