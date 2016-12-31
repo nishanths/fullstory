@@ -119,8 +119,8 @@ type ExportData io.ReadCloser
 
 // ExportData returns the data export bundle specified by id.
 //
-// If the client's HTTP Transport has DisableCompression set to true,
-// the caller should treat Export Dzta as gzipped JSON. Otherwise,
+// If the client's HTTP Transport has DisableCompression set to true, the
+// caller should treat the returned ExportData as gzipped JSON. Otherwise,
 // ExportData is JSON that has already been uncompressed.
 //
 // The caller is responsible for closing the returned ExportData if the returned
