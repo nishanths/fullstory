@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 // BaseURL is the base URL for the fullstory.com API.
@@ -17,11 +18,12 @@ var _ error = StatusError{}
 type StatusError struct {
 	Status     string
 	StatusCode int
+	RetryAfter int
 	Body       io.Reader
 }
 
 func (e StatusError) Error() string {
-	return fmt.Sprintf("fullstory: response error: %s", e.Status)
+	return fmt.Sprintf("fullstory: response error: Status:%s, StatusCode:%d, RetryAfter:%d", e.Status, e.StatusCode, e.RetryAfter)
 }
 
 // Client represents a HTTP client for making requests to the FullStory API.
@@ -62,14 +64,29 @@ func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		defer resp.Body.Close()
+		retryAfter := getRetryAfter(resp)
 		b := &bytes.Buffer{}
 		io.Copy(b, resp.Body) // Ignore error.
 		return nil, StatusError{
 			Body:       b,
 			Status:     resp.Status,
 			StatusCode: resp.StatusCode,
+			RetryAfter: retryAfter,
 		}
 	}
 
 	return resp.Body, nil
+}
+
+func getRetryAfter(resp *http.Response) int {
+	header := resp.Header.Get("Retry-After")
+	if header != "" {
+		// FullStory always returns the Retry-After header as number
+		// of seconds to wait, so convert it to an int, ignoring errors.
+		if result, err := strconv.Atoi(header); err == nil {
+			return result
+		}
+	}
+
+	return 0
 }
