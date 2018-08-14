@@ -47,7 +47,7 @@ func TestClient_getRetryAfter(t *testing.T) {
 		resp := http.Response{Header: http.Header{"Retry-After": []string{tc.retryHeader}}}
 		result := getRetryAfter(&resp)
 		if result != tc.expResult {
-			t.Error("Expected %d, got %d on test case %d", tc.expResult, result, i)
+			t.Errorf("Expected %d, got %d on test case %d", tc.expResult, result, i)
 		}
 	}
 }
