@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 // BaseURL is the base URL for the fullstory.com API.
@@ -18,7 +19,7 @@ var _ error = StatusError{}
 type StatusError struct {
 	Status     string
 	StatusCode int
-	RetryAfter int
+	RetryAfter time.Duration
 	Body       io.Reader
 }
 
@@ -71,18 +72,20 @@ func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
 			Body:       b,
 			Status:     resp.Status,
 			StatusCode: resp.StatusCode,
-			RetryAfter: retryAfter,
+			RetryAfter: time.Duration(retryAfter) * time.Second,
 		}
 	}
 
 	return resp.Body, nil
 }
 
+// getRetryAfter returns the value of the "Retry-After" header as an integer.
+// When applicable, FullStory APIs set this header to the number of seconds
+// to wait before retrying. If the header isn't present or if there is an
+// error parsing the value, it returns 0.
 func getRetryAfter(resp *http.Response) int {
 	header := resp.Header.Get("Retry-After")
 	if header != "" {
-		// FullStory always returns the Retry-After header as number
-		// of seconds to wait, so convert it to an int, ignoring errors.
 		if result, err := strconv.Atoi(header); err == nil {
 			return result
 		}

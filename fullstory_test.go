@@ -117,7 +117,8 @@ func TestExportDataRetry(t *testing.T) {
 		t.Fatalf("got %d, want %d for StatusCode", statusError.StatusCode, http.StatusTooManyRequests)
 	}
 
-	if statusError.RetryAfter != retryAfter {
-		t.Fatalf(" got %d, want %d for RetryAfter", statusError.RetryAfter, retryAfter)
+	expRetryAfter := time.Duration(retryAfter) * time.Second
+	if statusError.RetryAfter != expRetryAfter {
+		t.Fatalf("got %v, want %v for RetryAfter", statusError.RetryAfter, expRetryAfter)
 	}
 }
