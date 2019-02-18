@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"testing"
 	"time"
+	"fmt"
 )
 
 const (
@@ -134,7 +135,7 @@ func setupTest() {
 		if err != nil {
 			panic(err)
 		}
-		if _, err := gz.Write([]byte(`{"foo":bar, "hello:world", "answer":42, "question":null}`)); err != nil {
+		if _, err := gz.Write([]byte(fmt.Sprintf(`{"foo":bar, "hello:world", "answer":42, "question":null, "useragent": %s}`, r.Header.Get("User-Agent")))); err != nil {
 			panic(err)
 		}
 		if err := gz.Close(); err != nil {

@@ -136,3 +136,16 @@ func (c *Client) ExportData(id int) (ExportData, error) {
 
 	return c.doReq(req)
 }
+
+func (c *Client) ExportDataWithCustomUa(id int, useragent string) (ExportData, error) {
+	v := make(url.Values)
+	v.Add("id", strconv.Itoa(id))
+
+	req, err := http.NewRequest("GET", c.BaseURL+"/export/get"+"?"+v.Encode(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("User-Agent", useragent)
+	return c.doReq(req)
+}

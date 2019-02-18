@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 	"time"
+	"fmt"
 )
 
 func TestSessions(t *testing.T) {
@@ -67,7 +68,31 @@ func TestExportData(t *testing.T) {
 	}
 	s := string(b)
 
-	expect := `{"foo":bar, "hello:world", "answer":42, "question":null}`
+	expect := `{"foo":bar, "hello:world", "answer":42, "question":null, "useragent": Go-http-client/1.1}`
+
+	if s != expect {
+		t.Fatalf("got %q, want %q", s, expect)
+	}
+}
+
+func TestExportDataWithUserAgent(t *testing.T) {
+	t.Parallel()
+	userAgent := "test-ua"
+	data, err := client.ExportDataWithCustomUa(12345, userAgent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer data.Close()
+
+	// Automatically decompresses.
+
+	b, err := ioutil.ReadAll(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(b)
+
+	expect := fmt.Sprintf(`{"foo":bar, "hello:world", "answer":42, "question":null, "useragent": %s}`, userAgent)
 
 	if s != expect {
 		t.Fatalf("got %q, want %q", s, expect)
@@ -95,7 +120,7 @@ func TestExportDataGzip(t *testing.T) {
 	}
 	s := string(b)
 
-	expect := `{"foo":bar, "hello:world", "answer":42, "question":null}`
+	expect := `{"foo":bar, "hello:world", "answer":42, "question":null, "useragent": Go-http-client/1.1}`
 	if s != expect {
 		t.Fatalf("got %q, want %q", s, expect)
 	}
