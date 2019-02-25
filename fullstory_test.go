@@ -78,7 +78,9 @@ func TestExportData(t *testing.T) {
 func TestExportDataWithUserAgent(t *testing.T) {
 	t.Parallel()
 	userAgent := "test-ua"
-	data, err := client.ExportData(12345, WithUserAgent(userAgent))
+	data, err := client.ExportData(12345, func(r *http.Request) {
+		r.Header.Set("User-Agent", userAgent)
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -134,15 +134,9 @@ func (c *Client) ExportData(id int, modifyReq ...func(r *http.Request)) (ExportD
 		return nil, err
 	}
 
-	if len(modifyReq) > 0 {
-		modifyReq[0](req)
+	for _, mr := range modifyReq {
+		mr(req)
 	}
 
 	return c.doReq(req)
-}
-
-func WithUserAgent(ua string) func(r *http.Request) {
-	return func(r *http.Request) {
-		r.Header.Set("User-Agent", ua)
-	}
 }
