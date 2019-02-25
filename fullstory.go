@@ -125,27 +125,24 @@ type ExportData io.ReadCloser
 //
 // The caller is responsible for closing the returned ExportData if the returned
 // error is nil.
-func (c *Client) ExportData(id int) (ExportData, error) {
+func (c *Client) ExportData(id int, modifyReq ...func(r *http.Request)) (ExportData, error) {
 	v := make(url.Values)
 	v.Add("id", strconv.Itoa(id))
 
 	req, err := http.NewRequest("GET", c.BaseURL+"/export/get"+"?"+v.Encode(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(modifyReq) > 0 {
+		modifyReq[0](req)
 	}
 
 	return c.doReq(req)
 }
 
-func (c *Client) ExportDataWithCustomUa(id int, useragent string) (ExportData, error) {
-	v := make(url.Values)
-	v.Add("id", strconv.Itoa(id))
-
-	req, err := http.NewRequest("GET", c.BaseURL+"/export/get"+"?"+v.Encode(), nil)
-	if err != nil {
-		return nil, err
+func WithUserAgent(ua string) func(r *http.Request) {
+	return func(r *http.Request) {
+		r.Header.Set("User-Agent", ua)
 	}
-
-	req.Header.Set("User-Agent", useragent)
-	return c.doReq(req)
 }
