@@ -10,7 +10,7 @@ import (
 )
 
 // BaseURL is the base URL for the fullstory.com API.
-const BaseURL = "https://export.fullstory.com/api/v1"
+const BaseURL = "https://fullstory.com/api/v1"
 
 var _ error = StatusError{}
 
